@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Asesores · Dpto. Mercantil</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; min-height: 100vh; color: #0f172a; }
+
+    .header {
+      background: #004481; padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo {
+      width: 32px; height: 32px; background: #fff; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .header-title { color: #fff; font-weight: 800; font-size: 15px; }
+    .header-sub { color: #93c5fd; font-size: 12px; margin-left: 8px; }
+
+    .content { max-width: 800px; margin: 0 auto; padding: 24px 16px 40px; }
+
+    /* SELECTOR ASESOR */
+    .selector-label {
+      font-size: 12px; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+    }
+    .asesores-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .asesor-btn {
+      background: #fff; color: #0f172a; border: 2px solid #e2e8f0;
+      border-radius: 8px; padding: 8px 18px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .asesor-btn.active { background: #004481; color: #fff; border-color: #004481; }
+
+    /* FILTROS DÍA */
+    .filtros { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+    .filtro-btn {
+      background: transparent; color: #64748b; border: 1.5px solid #e2e8f0;
+      border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .filtro-btn.active { background: #004481; color: #fff; border-color: #004481; }
+    .filtro-btn.green.active { background: #0a6640; border-color: #0a6640; }
+    .filtro-btn.gray.active  { background: #64748b; border-color: #64748b; }
+    .date-input {
+      border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 4px 10px;
+      font-size: 12px; color: #0f172a; background: #f8fafc; outline: none; cursor: pointer;
+    }
+
+    /* MÉTRICAS */
+    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .metric-card {
+      background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    }
+    .metric-icon { font-size: 20px; margin-bottom: 4px; }
+    .metric-value { font-size: 24px; font-weight: 800; }
+    .metric-label { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+
+    /* GRUPOS */
+    .grupo { margin-bottom: 20px; }
+    .grupo-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .grupo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .grupo-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+    .grupo-count { font-size: 11px; color: #94a3b8; }
+
+    /* TARJETA */
+    .tarjeta {
+      background: #fff; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+      border-left-width: 4px;
+    }
+    .tarjeta-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .tarjeta-nombre { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+    .badge {
+      border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.03em; white-space: nowrap;
+    }
+    .tarjeta-contacto { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+    .tarjeta-contacto a { font-size: 13px; color: #004481; text-decoration: none; font-weight: 600; }
+    .tarjeta-meta { text-align: right; flex-shrink: 0; }
+    .tarjeta-fecha { font-size: 11px; color: #94a3b8; }
+    .tarjeta-notas {
+      margin-top: 10px; background: #f8fafc; border-radius: 6px;
+      padding: 8px 12px; font-size: 12px; color: #475569; border-left: 3px solid #e2e8f0;
+    }
+
+    /* ESTADOS */
+    .empty-state { text-align: center; padding: 60px 0; color: #94a3b8; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+    .loading { text-align: center; padding: 40px 0; color: #94a3b8; font-size: 14px; }
+
+    @media (max-width: 600px) {
+      .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">🏦</div>
+    <div>
+      <span class="header-title">Panel de Asesores</span>
+      <span class="header-sub">Dpto. Mercantil</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="selector-label">¿Quién eres?</div>
+  <div class="asesores-grid" id="asesores-grid"></div>
+  <div id="main-content">
+    <div class="empty-state">
+      <div class="empty-icon">👆</div>
+      <div class="empty-text">Selecciona tu nombre para ver tus expedientes</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHzxqEwapQpnE_KEpWJeD-vRIKHe5DvUz6_39vXnVDRW6QZIOgL5m7ZjYhJ7IGyfQ6aCrT3KXC_sAe/pub?gid=1699978719&single=true&output=csv";
+
+const ASESORES = [
+  { id: "victor",  nombre: "Víctor Ganaza" },
+  { id: "juan",    nombre: "Juan Iñiguez" },
+  { id: "noelia",  nombre: "Noelia Cabas" },
+  { id: "ainhoa",  nombre: "Ainhoa Lebrón" },
+  { id: "juande",  nombre: "Juande Linares" },
+  { id: "fran",    nombre: "Fran Rodríguez" },
+];
+
+const COLORES = {
+  "BBVA":          "#004481",
+  "ASP":           "#0a6640",
+  "General":       "#7c3aed",
+  "Infoautónomos": "#b45309",
+};
+
+const SERVICIOS_GRUPO = {
+  bbva_circe: "BBVA", bbva_ord: "BBVA",
+  asp_circe: "ASP", asp_ord: "ASP",
+  asociacion: "General", consultoria: "General", disolucion: "General",
+  capitalizacion: "General", compatibilizacion: "General", adp: "General", notaria_digital: "General",
+  info_circe: "Infoautónomos", info_ord: "Infoautónomos", info_cap: "Infoautónomos",
+  info_compat: "Infoautónomos", info_disol: "Infoautónomos", info_consul: "Infoautónomos",
+};
+
+const SERVICIOS_LABEL = {
+  bbva_circe: "BBVA · Creación CIRCE", bbva_ord: "BBVA · Creación Ordinaria",
+  asp_circe: "ASP · Creación CIRCE", asp_ord: "ASP · Creación Ordinaria",
+  asociacion: "General · Asociación", consultoria: "General · Consultoría",
+  disolucion: "General · Disolución", capitalizacion: "General · Capitalización",
+  compatibilizacion: "General · Compatibilización", adp: "General · ADP",
+  notaria_digital: "General · Notaría Digital",
+  info_circe: "Infoautónomos · Creación CIRCE", info_ord: "Infoautónomos · Creación Ordinaria",
+  info_cap: "Infoautónomos · Capitalización", info_compat: "Infoautónomos · Compatibilización",
+  info_disol: "Infoautónomos · Disolución", info_consul: "Infoautónomos · Consultoría",
+};
+
+// Estado
+let expedientes = [];
+let asesorSel = null;
+let filtroDia = "hoy";
+let fechaCal = "";
+let cargando = true;
+
+const hoy = new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+// Parsear CSV
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim());
+  return lines.slice(1).map(line => {
+    const vals = [];
+    let cur = ""; let inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === "," && !inQ) { vals.push(cur.trim()); cur = ""; }
+      else cur += ch;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || "").replace(/^"|"$/g, ""));
+    return obj;
+  }).filter(r => r["Cliente"] && r["Cliente"].trim());
+}
+
+function getColor(servicio) {
+  return COLORES[SERVICIOS_GRUPO[servicio]] || "#64748b";
+}
+function getLabel(servicio) {
+  return SERVICIOS_LABEL[servicio] || servicio;
+}
+function getGrupo(servicio) {
+  return SERVICIOS_GRUPO[servicio] || "General";
+}
+
+function calToES(f) {
+  if (!f) return "";
+  const [y, m, d] = f.split("-");
+  return d + "/" + m + "/" + y;
+}
+
+// Cargar datos
+async function cargarDatos() {
+  try {
+    const res = await fetch(CSV_URL + "&t=" + Date.now());
+    const text = await res.text();
+    expedientes = parseCSV(text);
+    cargando = false;
+    render();
+  } catch(e) {
+    cargando = false;
+    document.getElementById("main-content").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <div class="empty-text">Error al cargar los datos. Recarga la página.</div>
+      </div>`;
+  }
+}
+
+// Render asesores
+function renderAsesores() {
+  const grid = document.getElementById("asesores-grid");
+  grid.innerHTML = ASESORES.map(a => `
+    <button class="asesor-btn ${asesorSel === a.id ? 'active' : ''}"
+      onclick="selAsesor('${a.id}')">${a.nombre}</button>
+  `).join("");
+}
+
+function selAsesor(id) {
+  asesorSel = id;
+  filtroDia = "hoy";
+  fechaCal = "";
+  render();
+}
+
+// Filtrar expedientes del asesor
+function getExpedientesFiltrados() {
+  if (!asesorSel) return [];
+  const asesorNombre = ASESORES.find(a => a.id === asesorSel)?.nombre || "";
+  const mis = expedientes.filter(e => {
+    const asesorCSV = (e["Asesor"] || "").trim().toUpperCase();
+    return asesorCSV === asesorNombre.toUpperCase();
+  });
+
+  return mis.filter(e => {
+    const fecha = (e["Fecha asignación"] || "").trim();
+    if (filtroDia === "hoy")       return fecha === hoy;
+    if (filtroDia === "calendario") return fechaCal ? fecha === calToES(fechaCal) : false;
+    if (filtroDia === "todos")     return true;
+    return true;
+  });
+}
+
+function render() {
+  renderAsesores();
+
+  if (!aselorSel && !asesorSel) {
+    document.getElementById("main-content").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">👆</div>
+        <div class="empty-text">Selecciona tu nombre para ver tus expedientes</div>
+      </div>`;
+    return;
+  }
+
+  if (cargando) {
+    document.getElementById("main-content").innerHTML = `<div class="loading">⏳ Cargando expedientes...</div>`;
+    return;
+  }
+
+  const mis = getExpedientesFiltrados();
+  const grupos = {};
+  mis.forEach(e => {
+    const g = getGrupo(e["Servicio"]);
+    if (!grupos[g]) grupos[g] = [];
+    grupos[g].push(e);
+  });
+
+  let html = `
+    <div class="filtros">
+      <button class="filtro-btn ${filtroDia === 'hoy' ? 'active' : ''}" onclick="setFiltro('hoy')">📅 Hoy</button>
+      <button class="filtro-btn ${filtroDia === 'todos' ? 'active' : ''}" onclick="setFiltro('todos')">📋 Todos</button>
+      <button class="filtro-btn ${filtroDia === 'calendario' ? 'active gray' : ''}" onclick="setFiltro('calendario')">🗓️ Por fecha</button>
+      ${filtroDia === 'calendario' ? `<input type="date" class="date-input" value="${fechaCal}" onchange="setFecha(this.value)">` : ""}
+    </div>
+  `;
+
+  if (filtroDia === "calendario" && !fechaCal) {
+    html += `<div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">Selecciona una fecha para consultar</div></div>`;
+  } else if (mis.length === 0) {
+    html += `<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">No tienes expedientes en este período</div></div>`;
+  } else {
+    html += `
+      <div class="metrics">
+        <div class="metric-card">
+          <div class="metric-icon">📋</div>
+          <div class="metric-value" style="color:#004481">${mis.length}</div>
+          <div class="metric-label">Expedientes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🗂</div>
+          <div class="metric-value" style="color:#7c3aed">${Object.keys(grupos).length}</div>
+          <div class="metric-label">Servicios</div>
+        </div>
+      </div>
+    `;
+
+    Object.entries(grupos).forEach(([grupo, exps]) => {
+      const color = COLORES[grupo] || "#64748b";
+      html += `
+        <div class="grupo">
+          <div class="grupo-header">
+            <div class="grupo-dot" style="background:${color}"></div>
+            <span class="grupo-label">${grupo}</span>
+            <span class="grupo-count">(${exps.length})</span>
+          </div>
+          ${exps.map(exp => {
+            const c = getColor(exp["Servicio"]);
+            const tel = exp["Teléfono"] || "";
+            const email = exp["Email"] || "";
+            const notas = exp["Notas"] || "";
+            return `
+              <div class="tarjeta" style="border-left-color:${c}">
+                <div class="tarjeta-top">
+                  <div>
+                    <div class="tarjeta-nombre">${exp["Cliente"]}</div>
+                    <span class="badge" style="background:${c}18;color:${c};border:1px solid ${c}40">${getLabel(exp["Servicio"])}</span>
+                    ${(tel || email) ? `
+                      <div class="tarjeta-contacto">
+                        ${tel ? `<a href="tel:${tel}">📞 ${tel}</a>` : ""}
+                        ${email ? `<a href="mailto:${email}">✉️ ${email}</a>` : ""}
+                      </div>` : ""}
+                  </div>
+                  <div class="tarjeta-meta">
+                    <div class="tarjeta-fecha">Asignado: ${exp["Fecha asignación"] || "—"}</div>
+                  </div>
+                </div>
+                ${notas ? `<div class="tarjeta-notas">📝 ${notas}</div>` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("main-content").innerHTML = html;
+}
+
+function setFiltro(f) {
+  filtroDia = f;
+  if (f !== "calendario") fechaCal = "";
+  render();
+}
+
+function setFecha(f) {
+  fechaCal = f;
+  render();
+}
+
+// Init
+renderAsesores();
+cargarDatos();
+
+// Recargar cada 5 minutos
+setInterval(cargarDatos, 5 * 60 * 1000);
+</script>
+</body>
+</html>

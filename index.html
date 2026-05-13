@@ -123,7 +123,7 @@
 </div>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQHzxqEwapQpnE_KEpWJeD-vRIKHe5DvUz6_39vXnVDRW6QZIOgL5m7ZjYhJ7IGyfQ6aCrT3KXC_sAe/pub?gid=1699978719&single=true&output=csv";
+const CSV_URL = "https://corsproxy.io/?url=https://docs.google.com/spreadsheets/d/e/2PACX-1vQHzxqEwapQpnE_KEpWJeD-vRIKHe5DvUz6_39vXnVDRW6QZIOgL5m7ZjYhJ7IGyfQ6aCrT3KXC_sAe/pub?gid=1699978719%26single=true%26output=csv";
 
 const ASESORES = [
   { id: "victor",  nombre: "Víctor Ganaza" },
@@ -210,7 +210,7 @@ function calToES(f) {
 // Cargar datos
 async function cargarDatos() {
   try {
-    const res = await fetch(CSV_URL + "&t=" + Date.now());
+    const res = await fetch(CSV_URL);
     const text = await res.text();
     expedientes = parseCSV(text);
     cargando = false;

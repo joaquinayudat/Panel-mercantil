@@ -123,9 +123,7 @@
 </div>
 
 <script>
-const SHEET_ID = "2PACX-1vQHzxqEwapQpnE_KEpWJeD-vRIKHe5DvUz6_39vXnVDRW6QZIOgL5m7ZjYhJ7IGyfQ6aCrT3KXC_sAe";
-const GID = "1699978719";
-const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=${GID}&single=true&output=csv`;
+const DATOS_URL = "./datos.json";
 
 const ASESORES = [
   { id: "victor",  nombre: "Víctor Ganaza" },
@@ -209,34 +207,22 @@ function calToES(f) {
   return d + "/" + m + "/" + y;
 }
 
-// Cargar datos via fetch con múltiples proxies
+// Cargar datos desde datos.json local
 async function cargarDatos() {
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(CSV_URL)}`,
-    `https://corsproxy.io/?${encodeURIComponent(CSV_URL)}`,
-    `https://cors-anywhere.herokuapp.com/${CSV_URL}`,
-  ];
-
-  for (const url of proxies) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text.includes(",") || text.includes("Asesor")) {
-        expedientes = parseCSV(text);
-        cargando = false;
-        render();
-        return;
-      }
-    } catch(e) { continue; }
+  try {
+    const res = await fetch(DATOS_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error("No encontrado");
+    expedientes = await res.json();
+    cargando = false;
+    render();
+  } catch(e) {
+    cargando = false;
+    document.getElementById("main-content").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">❌</div>
+        <div class="empty-text">Error al cargar los datos. Recarga la página.</div>
+      </div>`;
   }
-
-  cargando = false;
-  document.getElementById("main-content").innerHTML = `
-    <div class="empty-state">
-      <div class="empty-icon">❌</div>
-      <div class="empty-text">Error al cargar los datos. Recarga la página.</div>
-    </div>`;
 }
 
 // Render asesores
